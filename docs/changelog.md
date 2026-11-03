@@ -1,4 +1,9 @@
-﻿## 多語系 UI + Release 打包（2026-11-03，Asia/Taipei）
+## v0.1.1 — Inno Setup 安裝檔（2026-11-03，Asia/Taipei）
+- installer/WinTouchpad.iss + scripts/publish-release.ps1 / uild-installer.ps1
+- Setup.exe：LocalAppData\Programs\WinTouchpad、開始功能表、可選桌面捷徑／開機啟動／安裝後啟動
+- 安裝精靈：en / zh-TW / zh-CN
+- Release 產物：WinTouchpad-Setup-v0.1.1.exe + zip（同 v0.1.0 崩潰修復：WASDK FDD + Bootstrap + .xbf）
+## 多語系 UI + Release 打包（2026-11-03，Asia/Taipei）
 - Localization/Strings*.resx：zh-TW（預設）、zh-CN、en / en-US / en-GB
 - 跟 Windows 顯示語言；未知語系後備繁中
 - Self-contained win-x64 publish → `dist/WinTouchpad-win-x64-v0.1.0.zip`

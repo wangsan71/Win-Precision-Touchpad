@@ -1,15 +1,28 @@
-﻿# Win Precision Touchpad
+# Win Precision Touchpad
 
 Windows Precision Touchpad **三指拖曳**（macOS Three Finger Drag 風格）原型。
 
 目前進度：**M4 完成** + **WinUI 3 設定窗** + **多語系 UI**。
 
-## 下載（Release zip）
+## 下載（Release）
 
-預先建置的 unpackaged、**self-contained**（win-x64）套件：
+預先建置的 unpackaged、**.NET 8 self-contained**（win-x64）+ **Windows App SDK framework-dependent**（Bootstrap）：
 
-- 本機產物：`dist/WinTouchpad-win-x64-v0.1.0.zip`
-- GitHub Releases（push 後）：見倉庫 Releases 頁
+| 產物 | 說明 |
+|------|------|
+| `dist/WinTouchpad-Setup-v0.1.1.exe` | **Inno Setup 安裝檔**（建議） |
+| `dist/WinTouchpad-win-x64-v0.1.1.zip` | 便攜解壓版 |
+
+GitHub Releases：https://github.com/wangsan71/Win-Precision-Touchpad/releases
+
+### 安裝（Setup.exe）
+
+1. 下載並執行 `WinTouchpad-Setup-v0.1.1.exe`（可選開機啟動／桌面捷徑）
+2. 預設安裝到 `%LocalAppData%\Programs\WinTouchpad`（唔使系統管理員）
+3. Windows「設定 → 藍牙與裝置 → 觸控板 → 三指手勢」設為 **無**
+4. 系統匣圖示 → 「設定…」
+
+維護者建安裝檔：`powershell -File scripts\build-installer.ps1 -MakeZip`（需 [Inno Setup 6](https://jrsoftware.org/isinfo.php)）
 
 ### 執行 zip
 
