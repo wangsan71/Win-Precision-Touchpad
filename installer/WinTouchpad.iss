@@ -4,7 +4,7 @@
 
 #define MyAppName "Win Precision Touchpad"
 #define MyAppNameShort "WinTouchpad"
-#define MyAppVersion "0.1.1"
+#define MyAppVersion "0.1.2"
 #define MyAppPublisher "wangsan71"
 #define MyAppURL "https://github.com/wangsan71/Win-Precision-Touchpad"
 #define MyAppExeName "WinTouchpad.App.exe"

@@ -1,32 +1,50 @@
-## v0.1.1 — Inno Setup 安裝檔（2026-11-03，Asia/Taipei）
-- installer/WinTouchpad.iss + scripts/publish-release.ps1 / uild-installer.ps1
-- Setup.exe：LocalAppData\Programs\WinTouchpad、開始功能表、可選桌面捷徑／開機啟動／安裝後啟動
-- 安裝精靈：en / zh-TW / zh-CN
-- Release 產物：WinTouchpad-Setup-v0.1.1.exe + zip（同 v0.1.0 崩潰修復：WASDK FDD + Bootstrap + .xbf）
-## 多語系 UI + Release 打包（2026-11-03，Asia/Taipei）
-- Localization/Strings*.resx：zh-TW（預設）、zh-CN、en / en-US / en-GB
-- 跟 Windows 顯示語言；未知語系後備繁中
-- Self-contained win-x64 publish → `dist/WinTouchpad-win-x64-v0.1.0.zip`
 # Changelog
 
+## v0.1.2 — 拖曳跟手／延遲優化（2026-11-03，Asia/Taipei）
+
+- 快取裝置 HID preparsed data 與排序後的 value caps，避免每次 `WM_INPUT` 重算
+- 拖曳期間抑制每幀詳細日誌；其餘詳細日誌間隔改為 250ms；INFO 改為緩衝寫入（WARN／ERROR 仍立即寫入）
+- 相對滑鼠移動使用 `MOUSEEVENTF_MOVE_NOCOALESCE`；重用 SendInput 緩衝區
+- Raw Input 執行緒優先權 `AboveNormal`；拖曳期間進程優先權短暫提升（`DragProcessBoost`）
+- 僅在剛新增接觸點／仍在取得接觸時套用 settle frame
+- `ContactTracker` 重用列表；單元測試 20／20 通過
+- Release：`WinTouchpad-Setup-v0.1.2.exe` + `WinTouchpad-win-x64-v0.1.2.zip`
+- README 改為書面語撰寫
+
+## v0.1.1 — Inno Setup 安裝檔（2026-11-03，Asia/Taipei）
+
+- `installer/WinTouchpad.iss` 與 `scripts/publish-release.ps1`／`build-installer.ps1`
+- Setup.exe：安裝至 `LocalAppData\Programs\WinTouchpad`、開始功能表、可選桌面捷徑／開機啟動／安裝後啟動
+- 安裝精靈語言：en／zh-TW／zh-CN
+- Release 產物：`WinTouchpad-Setup-v0.1.1.exe` + zip（延續 v0.1.0 崩潰修復：WASDK FDD + Bootstrap + `.xbf`）
+
+## 多語系 UI + Release 打包（2026-11-03，Asia/Taipei）
+
+- `Localization/Strings*.resx`：zh-TW（預設）、zh-CN、en／en-US／en-GB
+- 依 Windows 顯示語言選擇介面；未知語系後備為繁體中文
+- Self-contained win-x64 publish → `dist/WinTouchpad-win-x64-v0.1.0.zip`
+
 ## WinUI 3 設定／Tray 遷移（2026-11-03，Asia/Taipei）
-- 新增 `WinTouchpad.App`（WinUI 3 / Windows App SDK 1.7，unpackaged `WindowsPackageType=None`、self-contained）
+
+- 新增 `WinTouchpad.App`（WinUI 3／Windows App SDK 1.7，unpackaged `WindowsPackageType=None`、self-contained）
 - Settings：卡片式頁面、敏感度 Slider **0.2–2.0**（預設 **0.6**）、開關、路徑、儲存、開機自啟
 - Tray：`H.NotifyIcon.WinUI`；Core `RawInputHost` 保留；拖曳邏輯仍在 Core
-- `Directory.Build.targets`：喺無 VS AppxPackage MSBuild 任務嘅機器 stub `GetMrtPackagingOutputs`／`CopyLocalFilesOutputGroup` 等，令 unpackaged 建置可綠
-- `WinTouchpad.Tray`（WinForms）保留作 legacy；**請改跑 `WinTouchpad.App`**
-- 建置：`dotnet build src\WinTouchpad.App -c Debug -p:Platform=x64`；Core 單測 19 通過
+- `Directory.Build.targets`：在缺少 Visual Studio AppxPackage MSBuild 任務的環境 stub `GetMrtPackagingOutputs`／`CopyLocalFilesOutputGroup` 等，使 unpackaged 建置可通過
+- `WinTouchpad.Tray`（WinForms）保留為 legacy；**請改執行 `WinTouchpad.App`**
+- 建置：`dotnet build src\WinTouchpad.App -c Debug -p:Platform=x64`；Core 單元測試通過
+
 ## UI — 設定面板升級（2026-11-03）
 
 - `SettingsForm`：分區 GroupBox（拖曳／啟動／關於・路徑）
-- 視覺：淺灰底、白卡片、Microsoft JhengHei UI、間距與說明文字（zh-HK）
-- 行為不變：即時套用、儲存 + AutostartHelper、`Close()`、`SyncFrom`；預設敏感度仍 0.6
+- 視覺：淺灰底、白卡片、Microsoft JhengHei UI、間距與說明文字
+- 行為不變：即時套用、儲存 + AutostartHelper、`Close()`、`SyncFrom`；預設敏感度仍為 0.6
+
 摘要至 **M4**（2026-11-03，Asia/Taipei）。細節見 [plan.md](plan.md) §11、[testing.md](testing.md)。
 
 ## M4 — 文件收束
 
-- README：建置 → 關系統三指 → 執行 → 設定／已知限制
-- `testing.md`：M1–M3 清單；標示「已驗證（本專案對話）」vs「用戶仲要確認」
+- README：建置 → 關閉系統三指 → 執行 → 設定／已知限制
+- `testing.md`：M1–M3 清單；標示「已驗證（本專案對話）」與「用戶尚待確認」
 - `architecture.md`／`setup-touchpad.md`／`settings-upgrade.md`／`licenses.md`／`oss-references.md` 交叉連結對齊
 - `plan.md`：M4 完成；shared understanding 註記
 - 本檔新增
@@ -36,7 +54,7 @@
 - `SettingsStore` + `settings.json`（`settingsVersion = 1`）
 - WinForms 設定窗：啟用、敏感度、開始距離、開機自啟
 - `AutostartHelper`（HKCU Run）
-- **修復：** `Show()` 開窗時「關閉」改 `Click → Close()`；窗高 310、掣 y=255，路徑提示唔蓋掣
+- **修復：** `Show()` 開窗時「關閉」改為 `Click → Close()`；窗高 310、按鈕 y=255，路徑提示不遮擋按鈕
 - `docs/settings-upgrade.md`
 
 ## M2 — DragEngine + SendInput
@@ -54,4 +72,3 @@
 ## M0 — Plan
 
 - Grilling Round 1–5；正式 `plan.md`；用戶確認開始實作
-

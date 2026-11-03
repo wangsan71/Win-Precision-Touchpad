@@ -4,7 +4,7 @@
   Publish + build Inno Setup Setup.exe (and optional zip) for WinTouchpad.
 #>
 param(
-  [string]$Version = "0.1.1",
+  [string]$Version = "0.1.2",
   [switch]$SkipPublish,
   [switch]$MakeZip
 )
@@ -40,7 +40,7 @@ if ($MakeZip) {
   $zipPath = Join-Path $Root "dist\WinTouchpad-win-x64-v$Version.zip"
   if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
   Compress-Archive -Path (Join-Path $publish "*") -DestinationPath $zipPath -CompressionLevel Optimal
-  Write-Host "Zip: $zipPath  ($([math]::Round((Get-Item $zip).Length/1MB,1)) MB)"
+  Write-Host "Zip: $zipPath  ($([math]::Round((Get-Item $zipPath).Length/1MB,1)) MB)"
 }
 
 Write-Host "Done."
