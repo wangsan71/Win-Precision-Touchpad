@@ -4,7 +4,7 @@
 
 #define MyAppName "Win Precision Touchpad"
 #define MyAppNameShort "WinTouchpad"
-#define MyAppVersion "0.1.2"
+#define MyAppVersion "0.1.3"
 #define MyAppPublisher "wangsan71"
 #define MyAppURL "https://github.com/wangsan71/Win-Precision-Touchpad"
 #define MyAppExeName "WinTouchpad.App.exe"
@@ -72,6 +72,56 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}
 Type: filesandordirs; Name: "{app}"
 
 [Code]
+const
+  GWL_WNDPROC = -4;
+  WM_LBUTTONDOWN = $0201;
+  WM_SYSCOMMAND = $0112;
+  SC_DRAGMOVE = $F012;
+
+var
+  OldWizardWndProc: Longint;
+
+function SetWindowLong(hWnd: Longint; nIndex: Integer; dwNewLong: Longint): Longint;
+  external 'SetWindowLongW@user32.dll stdcall';
+
+function CallWindowProc(lpPrevWndFunc, hWnd, Msg, wParam, lParam: Longint): Longint;
+  external 'CallWindowProcW@user32.dll stdcall';
+
+function ReleaseCapture: BOOL;
+  external 'ReleaseCapture@user32.dll stdcall';
+
+function SendMessage(hWnd, Msg, wParam, lParam: Longint): Longint;
+  external 'SendMessageW@user32.dll stdcall';
+
+function WizardWndProc(hwnd, uMsg, wParam, lParam: Longint): Longint;
+var
+  Y: Integer;
+begin
+  { Client-area press near the top: start a caption-style drag (touchpad-friendly). }
+  if uMsg = WM_LBUTTONDOWN then
+  begin
+    Y := Smallint(lParam shr 16);
+    if Y < ScaleY(72) then
+    begin
+      ReleaseCapture;
+      Result := SendMessage(hwnd, WM_SYSCOMMAND, SC_DRAGMOVE, 0);
+      Exit;
+    end;
+  end;
+  Result := CallWindowProc(OldWizardWndProc, hwnd, uMsg, wParam, lParam);
+end;
+
+procedure InitializeWizard;
+begin
+  OldWizardWndProc := SetWindowLong(WizardForm.Handle, GWL_WNDPROC, CreateCallback(@WizardWndProc));
+end;
+
+procedure DeinitializeSetup;
+begin
+  if OldWizardWndProc <> 0 then
+    SetWindowLong(WizardForm.Handle, GWL_WNDPROC, OldWizardWndProc);
+end;
+
 function InitializeSetup(): Boolean;
 begin
   Result := True;

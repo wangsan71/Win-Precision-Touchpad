@@ -1,5 +1,10 @@
-# Changelog
+﻿# Changelog
 
+## v0.1.3 — 安裝精靈視窗拖曳修正（2026-11-03，Asia/Taipei）
+
+- 維持 `WizardStyle=modern` 與系統原生標題列
+- 以 `CreateCallback` 子類化精靈視窗：於客戶區頂部（約 72 DIP）收到滑鼠左鍵時發送 `SC_DRAGMOVE`，便於以滑鼠／觸控板點擊拖移安裝視窗
+- Release：`WinTouchpad-Setup-v0.1.3.exe` + `WinTouchpad-win-x64-v0.1.3.zip`
 ## v0.1.2 — 拖曳跟手／延遲優化（2026-11-03，Asia/Taipei）
 
 - 快取裝置 HID preparsed data 與排序後的 value caps，避免每次 `WM_INPUT` 重算

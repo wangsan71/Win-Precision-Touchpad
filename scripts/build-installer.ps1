@@ -4,7 +4,7 @@
   Publish + build Inno Setup Setup.exe (and optional zip) for WinTouchpad.
 #>
 param(
-  [string]$Version = "0.1.2",
+  [string]$Version = "0.1.3",
   [switch]$SkipPublish,
   [switch]$MakeZip
 )

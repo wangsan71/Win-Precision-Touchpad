@@ -15,8 +15,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\build-installer.ps1 
 - Publishes crash-safe layout: **SelfContained=.NET** + **WindowsAppSDKSelfContained=false** (Bootstrap) + WinUI `.xbf`
 - Compiles `installer\WinTouchpad.iss`
 - Outputs:
-  - `dist\WinTouchpad-Setup-v0.1.1.exe`
-  - `dist\WinTouchpad-win-x64-v0.1.1.zip` (with `-MakeZip`)
+  - `dist\WinTouchpad-Setup-v0.1.3.exe`
+  - `dist\WinTouchpad-win-x64-v0.1.3.zip` (with `-MakeZip`)
 
 Skip republish: `-SkipPublish`
 
@@ -31,7 +31,7 @@ Skip republish: `-SkipPublish`
 ## Silent install / uninstall (smoke)
 
 ```powershell
-dist\WinTouchpad-Setup-v0.1.1.exe /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /DIR="%TEMP%\WinTouchpad-smoke"
+dist\WinTouchpad-Setup-v0.1.3.exe /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /DIR="%TEMP%\WinTouchpad-smoke"
 # uninstall:
 & "$env:LOCALAPPDATA\Programs\WinTouchpad\unins000.exe" /VERYSILENT  # if default dir
 # or:
