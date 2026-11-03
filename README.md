@@ -18,7 +18,7 @@ Windows Precision Touchpad **三指拖曳**（macOS Three Finger Drag 風格）�
 3. 執行 `WinTouchpad.App.exe`
 4. 系統匣圖示 → 「設定…」／右鍵選單
 
-> Self-contained 已內嵌 .NET 8 + Windows App SDK 執行階段，一般 **唔使**再裝 Visual Studio／單獨 Runtime。若改用 framework-dependent 建置，需先安裝 [.NET 8 Desktop](https://dotnet.microsoft.com/download/dotnet/8.0) 同 [Windows App Runtime 1.7](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads)。
+> Release zip 內嵌 **.NET 8**（SelfContained），Windows App SDK 採 **framework-dependent**：需已安裝 [Windows App Runtime 1.7](https://learn.microsoft.com/windows/apps/windows-app-sdk/downloads)（Win11 多數已有）。解壓後直接跑 `WinTouchpad.App.exe`；唔使裝 Visual Studio。
 
 ## 語言／Languages
 
@@ -69,7 +69,7 @@ dotnet run --project src\WinTouchpad.App -c Debug -p:Platform=x64
 ```powershell
 dotnet publish src\WinTouchpad.App -c Release -p:Platform=x64 `
   -p:RuntimeIdentifier=win-x64 -p:WindowsPackageType=None `
-  -p:WindowsAppSDKSelfContained=true -p:SelfContained=true `
+  -p:WindowsAppSDKSelfContained=false -p:SelfContained=true `
   -o artifacts\publish\win-x64
 ```
 
@@ -108,3 +108,5 @@ dist/                     # Release zip（gitignore）
 
 - **主：** WANGSAN-LP → `C:\Users\asus\Desktop\APP\_PersonalProject\Win-Precision-Touchpad`
 - **備：** DESKTOP-5T8JV9O → `C:\Users\asus\Desktop\Win-Precision-Touchpad`（由協調端同步）
+
+

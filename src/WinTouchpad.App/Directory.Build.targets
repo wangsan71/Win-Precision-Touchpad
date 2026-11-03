@@ -52,4 +52,15 @@
       </PackagingOutputs>
     </ItemGroup>
   </Target>
+
+  <!-- WinUI XBF stays in OutDir but is omitted from publish resolve without Appx/PRI targets. -->
+  <Target Name="IncludeWinUIXbfInPublish" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <_WinUiXbf Include="$(OutDir)*.xbf" />
+      <ResolvedFileToPublish Include="@(_WinUiXbf)" Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
 </Project>

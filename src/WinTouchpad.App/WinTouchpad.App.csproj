@@ -21,6 +21,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <DefineConstants Condition="'$(WindowsAppSDKSelfContained)' == 'true'">$(DefineConstants);WINDOWSAPPSDK_SELFCONTAINED</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250606001" />
@@ -46,3 +47,4 @@
     </EmbeddedResource>
   </ItemGroup>
 </Project>
+
