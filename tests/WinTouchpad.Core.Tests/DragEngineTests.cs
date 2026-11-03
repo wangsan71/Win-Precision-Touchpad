@@ -12,6 +12,16 @@ public class DragEngineTests
     private static IReadOnlyList<ContactDelta> ThreeMove(int dx, int dy) =>
         new[] { Delta(1, dx, dy), Delta(2, dx, dy), Delta(3, dx, dy) };
 
+    private static IReadOnlyList<ContactDelta> ThreeNew() =>
+        new[] { Delta(1, 0, 0, isNew: true), Delta(2, 0, 0, isNew: true), Delta(3, 0, 0, isNew: true) };
+
+    /// <summary>Idle→Pending (no accumulate), then accumulate until threshold.</summary>
+    private static void ArmPending(DragEngine engine)
+    {
+        engine.Process(true, ThreeMove(0, 0));
+        Assert.Equal(DragState.Pending, engine.State);
+    }
+
     [Fact]
     public void StaysPending_UntilThreshold_ThenLeftDown()
     {
@@ -21,12 +31,11 @@ public class DragEngineTests
         var transitions = new List<(DragState from, DragState to)>();
         engine.StateChanged += (a, b) => transitions.Add((a, b));
 
-        // First frame: Idle → Pending, small move
-        engine.Process(true, ThreeMove(3, 0));
-        Assert.Equal(DragState.Pending, engine.State);
+        ArmPending(engine);
         Assert.Equal(0, mouse.LeftDownCount);
 
-        // Still under threshold (3+3=6 < 10)
+        // Under threshold (3+3=6 < 10)
+        engine.Process(true, ThreeMove(3, 0));
         engine.Process(true, ThreeMove(3, 0));
         Assert.Equal(DragState.Pending, engine.State);
         Assert.Equal(0, mouse.LeftDownCount);
@@ -46,7 +55,8 @@ public class DragEngineTests
         var mouse = new RecordingMouseInjector();
         var engine = new DragEngine(mouse, new DragEngineOptions { StartDistanceThreshold = 5f, Sensitivity = 2f });
 
-        engine.Process(true, ThreeMove(5, 0)); // start immediately; flush Move(10,0) at sens=2
+        ArmPending(engine);
+        engine.Process(true, ThreeMove(5, 0)); // crosses threshold; flush Move(10,0) at sens=2
         Assert.Equal(DragState.Dragging, engine.State);
         Assert.Equal(1, mouse.LeftDownCount);
         Assert.Equal(10f, mouse.TotalDx, 2);
@@ -75,6 +85,7 @@ public class DragEngineTests
         Assert.Empty(mouse.Actions);
 
         opts.Enabled = true;
+        ArmPending(engine);
         engine.Process(true, ThreeMove(20, 0));
         Assert.Equal(DragState.Dragging, engine.State);
         Assert.Equal(1, mouse.LeftDownCount);
@@ -91,17 +102,12 @@ public class DragEngineTests
         var mouse = new RecordingMouseInjector();
         var engine = new DragEngine(mouse, new DragEngineOptions { StartDistanceThreshold = 1f });
 
-        // Force into Dragging first
+        ArmPending(engine);
         engine.Process(true, ThreeMove(5, 0));
         Assert.Equal(DragState.Dragging, engine.State);
         var movesBefore = mouse.Actions.Count(a => a.StartsWith("Move"));
 
-        engine.Process(true, new[]
-        {
-            Delta(1, 0, 0, isNew: true),
-            Delta(2, 0, 0, isNew: true),
-            Delta(3, 0, 0, isNew: true)
-        });
+        engine.Process(true, ThreeNew());
         var movesAfter = mouse.Actions.Count(a => a.StartsWith("Move"));
         Assert.Equal(movesBefore, movesAfter);
     }
@@ -112,6 +118,7 @@ public class DragEngineTests
         var mouse = new RecordingMouseInjector();
         var engine = new DragEngine(mouse, new DragEngineOptions { StartDistanceThreshold = 100f });
 
+        ArmPending(engine);
         engine.Process(true, ThreeMove(2, 0));
         Assert.Equal(DragState.Pending, engine.State);
 
@@ -127,6 +134,7 @@ public class DragEngineTests
         var mouse = new RecordingMouseInjector();
         var engine = new DragEngine(mouse, new DragEngineOptions { StartDistanceThreshold = 1f });
 
+        ArmPending(engine);
         engine.Process(true, ThreeMove(10, 0));
         Assert.Equal(DragState.Dragging, engine.State);
 
@@ -134,5 +142,26 @@ public class DragEngineTests
         engine.Process(false, ThreeMove(1, 0));
         Assert.Equal(DragState.Idle, engine.State);
         Assert.Equal(1, mouse.LeftUpCount);
+    }
+
+    [Fact]
+    public void NewContacts_RequireOneSettleFrame_BeforeAccumulate()
+    {
+        var mouse = new RecordingMouseInjector();
+        var engine = new DragEngine(mouse, new DragEngineOptions { StartDistanceThreshold = 5f, Sensitivity = 1f });
+
+        // Landing with IsNew → Pending + settle armed
+        engine.Process(true, ThreeNew());
+        Assert.Equal(DragState.Pending, engine.State);
+
+        // First established frame is dropped (settle)
+        engine.Process(true, ThreeMove(10, 0));
+        Assert.Equal(DragState.Pending, engine.State);
+        Assert.Equal(0, mouse.LeftDownCount);
+
+        // Next frame accumulates and can begin drag
+        engine.Process(true, ThreeMove(10, 0));
+        Assert.Equal(DragState.Dragging, engine.State);
+        Assert.Equal(1, mouse.LeftDownCount);
     }
 }

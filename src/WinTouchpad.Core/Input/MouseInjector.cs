@@ -12,9 +12,15 @@ public sealed class MouseInjector : IMouseInjector
     private const int MouseEventFMove = 0x0001;
     private const int MouseEventFLeftDown = 0x0002;
     private const int MouseEventFLeftUp = 0x0004;
+    /// <summary>
+    /// Prevents Windows from coalescing consecutive mouse-move messages.
+    /// Under power throttling, coalescing makes injected moves feel one beat behind.
+    /// </summary>
+    private const int MouseEventFMoveNoCoalesce = 0x2000;
 
     private float _residualX;
     private float _residualY;
+    private readonly Input[] _buffer = new Input[1];
 
     public void LeftDown() => SendButton(MouseEventFLeftDown);
 
@@ -32,31 +38,31 @@ public sealed class MouseInjector : IMouseInjector
         if (intX == 0 && intY == 0)
             return;
 
-        var input = new Input
+        _buffer[0] = new Input
         {
             type = InputMouse,
             mi = new MouseInput
             {
                 dx = intX,
                 dy = intY,
-                dwFlags = MouseEventFMove
+                dwFlags = MouseEventFMove | MouseEventFMoveNoCoalesce
             }
         };
 
-        var sent = SendInput(1, new[] { input }, Marshal.SizeOf<Input>());
+        var sent = SendInput(1, _buffer, Marshal.SizeOf<Input>());
         if (sent == 0)
             throw new InvalidOperationException($"SendInput MOVE failed (Win32={Marshal.GetLastWin32Error()}).");
     }
 
-    private static void SendButton(int flag)
+    private void SendButton(int flag)
     {
-        var input = new Input
+        _buffer[0] = new Input
         {
             type = InputMouse,
             mi = new MouseInput { dwFlags = flag }
         };
 
-        var sent = SendInput(1, new[] { input }, Marshal.SizeOf<Input>());
+        var sent = SendInput(1, _buffer, Marshal.SizeOf<Input>());
         if (sent == 0)
             throw new InvalidOperationException($"SendInput button failed (Win32={Marshal.GetLastWin32Error()}).");
     }

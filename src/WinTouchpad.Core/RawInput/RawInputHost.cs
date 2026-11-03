@@ -27,6 +27,8 @@ public sealed class RawInputHost : IDisposable
         {
             IsBackground = true,
             Name = "WinTouchpad.RawInput",
+            // AboveNormal keeps WM_INPUT → SendInput responsive under power limits.
+            Priority = ThreadPriority.AboveNormal,
         };
         _thread.SetApartmentState(ApartmentState.STA);
         _thread.Start();

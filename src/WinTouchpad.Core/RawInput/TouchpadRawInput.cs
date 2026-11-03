@@ -10,11 +10,22 @@ namespace WinTouchpad.Core.RawInput;
 /// ClementGre/ThreeFingerDragOnWindows (MIT). Not a verbatim copy — cleaned for this project.
 /// </para>
 /// HID TLCs: Usage Page 0x0D (Digitizers), Usage 0x05 (Touch Pad).
+/// Caches preparsed HID data + sorted value caps per device so the hot WM_INPUT path
+/// does not re-query/sort caps on every packet (major continuous-latency win under power throttle).
 /// </summary>
 public static class TouchpadRawInput
 {
     public const int WmInput = NativeMethods.WM_INPUT;
     public const int WmInputDeviceChange = NativeMethods.WM_INPUT_DEVICE_CHANGE;
+
+    private static readonly object CacheGate = new();
+    private static readonly Dictionary<nint, DeviceCapsCache> CapsByDevice = new();
+
+    private sealed class DeviceCapsCache
+    {
+        public IntPtr Preparsed;
+        public NativeMethods.HIDP_VALUE_CAPS[] ValueCaps = Array.Empty<NativeMethods.HIDP_VALUE_CAPS>();
+    }
 
     /// <summary>True if any connected HID device reports as a Precision Touchpad.</summary>
     public static bool Exists()
@@ -71,6 +82,20 @@ public static class TouchpadRawInput
             (uint)Marshal.SizeOf<NativeMethods.RAWINPUTDEVICE>());
     }
 
+    /// <summary>Drop cached preparsed data (e.g. after device change). Safe to call anytime.</summary>
+    public static void ClearDeviceCache()
+    {
+        lock (CacheGate)
+        {
+            foreach (var entry in CapsByDevice.Values)
+            {
+                if (entry.Preparsed != IntPtr.Zero)
+                    Marshal.FreeHGlobal(entry.Preparsed);
+            }
+            CapsByDevice.Clear();
+        }
+    }
+
     /// <summary>
     /// Parse a WM_INPUT lParam into contacts. Returns null on failure / empty.
     /// </summary>
@@ -109,42 +134,20 @@ public static class TouchpadRawInput
                 Marshal.FreeHGlobal(rawInputPointer);
         }
 
+        var cache = GetOrBuildCaps(rawInput.Header.hDevice);
+        if (cache is null)
+            return null;
+
         IntPtr reportPtr = Marshal.AllocHGlobal(rawHidRawData.Length);
         Marshal.Copy(rawHidRawData, 0, reportPtr, rawHidRawData.Length);
-        IntPtr preparsedPtr = IntPtr.Zero;
 
         try
         {
-            uint preparsedSize = 0;
-            if (NativeMethods.GetRawInputDeviceInfo(rawInput.Header.hDevice, NativeMethods.RIDI_PREPARSEDDATA, IntPtr.Zero, ref preparsedSize) != 0)
-                return null;
-
-            preparsedPtr = Marshal.AllocHGlobal((int)preparsedSize);
-            if (NativeMethods.GetRawInputDeviceInfo(rawInput.Header.hDevice, NativeMethods.RIDI_PREPARSEDDATA, preparsedPtr, ref preparsedSize) != preparsedSize)
-                return null;
-
-            if (NativeMethods.HidP_GetCaps(preparsedPtr, out var caps) != NativeMethods.HidPStatusSuccess)
-                return null;
-
-            ushort valueCapsLength = caps.NumberInputValueCaps;
-            if (valueCapsLength == 0)
-                return null;
-
-            var valueCaps = new NativeMethods.HIDP_VALUE_CAPS[valueCapsLength];
-            if (NativeMethods.HidP_GetValueCaps(
-                    NativeMethods.HIDP_REPORT_TYPE.HidP_Input,
-                    valueCaps,
-                    ref valueCapsLength,
-                    preparsedPtr) != NativeMethods.HidPStatusSuccess)
-            {
-                return null;
-            }
-
             uint contactCount = 0;
             var builder = new TouchpadContactBuilder();
-            var contacts = new List<TouchpadContact>();
+            var contacts = new List<TouchpadContact>(8);
 
-            foreach (var valueCap in valueCaps.OrderBy(x => x.LinkCollection))
+            foreach (var valueCap in cache.ValueCaps)
             {
                 if (NativeMethods.HidP_GetUsageValue(
                         NativeMethods.HIDP_REPORT_TYPE.HidP_Input,
@@ -152,7 +155,7 @@ public static class TouchpadRawInput
                         valueCap.LinkCollection,
                         valueCap.Usage,
                         out uint value,
-                        preparsedPtr,
+                        cache.Preparsed,
                         reportPtr,
                         (uint)rawHidRawData.Length) != NativeMethods.HidPStatusSuccess)
                 {
@@ -203,8 +206,79 @@ public static class TouchpadRawInput
         finally
         {
             Marshal.FreeHGlobal(reportPtr);
-            if (preparsedPtr != IntPtr.Zero)
+        }
+    }
+
+    private static DeviceCapsCache? GetOrBuildCaps(IntPtr hDevice)
+    {
+        lock (CacheGate)
+        {
+            if (CapsByDevice.TryGetValue(hDevice, out var hit))
+                return hit;
+        }
+
+        uint preparsedSize = 0;
+        if (NativeMethods.GetRawInputDeviceInfo(hDevice, NativeMethods.RIDI_PREPARSEDDATA, IntPtr.Zero, ref preparsedSize) != 0)
+            return null;
+
+        var preparsedPtr = Marshal.AllocHGlobal((int)preparsedSize);
+        try
+        {
+            if (NativeMethods.GetRawInputDeviceInfo(hDevice, NativeMethods.RIDI_PREPARSEDDATA, preparsedPtr, ref preparsedSize) != preparsedSize)
+            {
                 Marshal.FreeHGlobal(preparsedPtr);
+                return null;
+            }
+
+            if (NativeMethods.HidP_GetCaps(preparsedPtr, out var caps) != NativeMethods.HidPStatusSuccess)
+            {
+                Marshal.FreeHGlobal(preparsedPtr);
+                return null;
+            }
+
+            ushort valueCapsLength = caps.NumberInputValueCaps;
+            if (valueCapsLength == 0)
+            {
+                Marshal.FreeHGlobal(preparsedPtr);
+                return null;
+            }
+
+            var valueCaps = new NativeMethods.HIDP_VALUE_CAPS[valueCapsLength];
+            if (NativeMethods.HidP_GetValueCaps(
+                    NativeMethods.HIDP_REPORT_TYPE.HidP_Input,
+                    valueCaps,
+                    ref valueCapsLength,
+                    preparsedPtr) != NativeMethods.HidPStatusSuccess)
+            {
+                Marshal.FreeHGlobal(preparsedPtr);
+                return null;
+            }
+
+            // Sort once; hot path iterates the cached ordered array.
+            Array.Sort(valueCaps, (a, b) => a.LinkCollection.CompareTo(b.LinkCollection));
+
+            var created = new DeviceCapsCache
+            {
+                Preparsed = preparsedPtr,
+                ValueCaps = valueCaps
+            };
+
+            lock (CacheGate)
+            {
+                if (CapsByDevice.TryGetValue(hDevice, out var raced))
+                {
+                    Marshal.FreeHGlobal(preparsedPtr);
+                    return raced;
+                }
+
+                CapsByDevice[hDevice] = created;
+                return created;
+            }
+        }
+        catch
+        {
+            Marshal.FreeHGlobal(preparsedPtr);
+            throw;
         }
     }
 }

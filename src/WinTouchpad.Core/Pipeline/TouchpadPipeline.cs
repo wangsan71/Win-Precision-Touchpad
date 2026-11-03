@@ -19,8 +19,12 @@ public sealed class TouchpadPipeline
     private int _lastLoggedFingerCount = -1;
     private DateTime _lastVerboseLogUtc = DateTime.MinValue;
 
-    /// <summary>Minimum interval between verbose per-move log lines (reduces spam).</summary>
-    public TimeSpan VerboseLogInterval { get; set; } = TimeSpan.FromMilliseconds(40);
+    /// <summary>
+    /// Minimum interval between verbose per-move log lines when not actively dragging.
+    /// While Dragging, per-move logs are suppressed so AutoFlush disk I/O cannot stall SendInput
+    /// on the Raw Input thread (especially under ≤20W power limits).
+    /// </summary>
+    public TimeSpan VerboseLogInterval { get; set; } = TimeSpan.FromMilliseconds(250);
 
     public TouchpadPipeline(IAppLogger logger, IMouseInjector? mouse = null, DragEngineOptions? dragOptions = null)
     {
@@ -53,7 +57,8 @@ public sealed class TouchpadPipeline
             _lastLoggedFingerCount = frame.FingerCount;
         }
 
-        if (route == FingerRoute.ThreeFinger)
+        // Avoid disk/UI log work on the hot Dragging path — that was a continuous lag source.
+        if (route == FingerRoute.ThreeFinger && _drag.State != DragState.Dragging)
         {
             var now = DateTime.UtcNow;
             if (now - _lastVerboseLogUtc >= VerboseLogInterval || frame.FingerCount != _lastLoggedFingerCount)
@@ -107,6 +112,10 @@ public sealed class TouchpadPipeline
     private void OnDragStateChanged(DragState previous, DragState next)
     {
         _logger.Info($"drag.state {previous} → {next}");
+        if (next == DragState.Dragging)
+            DragProcessBoost.SetDragging(true);
+        else if (next is DragState.Idle or DragState.End)
+            DragProcessBoost.SetDragging(false);
     }
 
     private static string FormatContacts(IReadOnlyList<TouchpadContact> contacts) =>

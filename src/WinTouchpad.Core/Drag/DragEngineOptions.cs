@@ -6,7 +6,7 @@ public sealed class DragEngineOptions
     /// <summary>
     /// Euclidean HID-unit distance that must accumulate in Pending before left-button down.
     /// Prevents accidental clicks when three fingers land without intending to drag.
-    /// DragEngine also requires 3 established contacts + one settle frame (no wall-clock delay).
+    /// DragEngine requires 3 established contacts; one settle frame only when a contact was just added.
     /// </summary>
     public float StartDistanceThreshold { get; set; } = 12f;
 

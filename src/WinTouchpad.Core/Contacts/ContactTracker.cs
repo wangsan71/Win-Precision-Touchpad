@@ -6,37 +6,59 @@ namespace WinTouchpad.Core.Contacts;
 public sealed class ContactTracker
 {
     private readonly Dictionary<int, TouchpadContact> _previous = new();
+    private readonly List<ContactDelta> _deltas = new(8);
+    private readonly List<int> _removeScratch = new(8);
 
     /// <summary>Update with the latest frame and return per-contact movement since the previous frame.</summary>
     public IReadOnlyList<ContactDelta> Update(IReadOnlyList<TouchpadContact> contacts)
     {
-        var deltas = new List<ContactDelta>(contacts.Count);
-        var seen = new HashSet<int>();
+        _deltas.Clear();
 
         foreach (var c in contacts)
         {
-            seen.Add(c.ContactId);
             if (_previous.TryGetValue(c.ContactId, out var prev))
             {
-                deltas.Add(new ContactDelta(c.ContactId, c.X - prev.X, c.Y - prev.Y, c.X, c.Y, isNew: false));
+                _deltas.Add(new ContactDelta(c.ContactId, c.X - prev.X, c.Y - prev.Y, c.X, c.Y, isNew: false));
             }
             else
             {
-                deltas.Add(new ContactDelta(c.ContactId, 0, 0, c.X, c.Y, isNew: true));
+                _deltas.Add(new ContactDelta(c.ContactId, 0, 0, c.X, c.Y, isNew: true));
             }
 
             _previous[c.ContactId] = c;
         }
 
-        foreach (var id in _previous.Keys.Where(id => !seen.Contains(id)).ToList())
+        if (_previous.Count > contacts.Count)
         {
-            _previous.Remove(id);
+            _removeScratch.Clear();
+            foreach (var id in _previous.Keys)
+            {
+                var found = false;
+                for (var i = 0; i < contacts.Count; i++)
+                {
+                    if (contacts[i].ContactId == id)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                    _removeScratch.Add(id);
+            }
+
+            foreach (var id in _removeScratch)
+                _previous.Remove(id);
         }
 
-        return deltas;
+        return _deltas;
     }
 
-    public void Reset() => _previous.Clear();
+    public void Reset()
+    {
+        _previous.Clear();
+        _deltas.Clear();
+    }
 }
 
 /// <summary>Delta for one contact between consecutive frames.</summary>

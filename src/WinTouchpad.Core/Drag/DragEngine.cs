@@ -15,7 +15,7 @@ public sealed class DragEngine
     private float _pendingAccumX;
     private float _pendingAccumY;
     private float _pendingDistance;
-    private bool _skipNextDeltaAfterArmed;
+    private bool _awaitingEstablishedSettle;
 
     public DragEngine(IMouseInjector mouse, DragEngineOptions? options = null)
     {
@@ -62,22 +62,23 @@ public sealed class DragEngine
                 _pendingAccumX = 0;
                 _pendingAccumY = 0;
                 _pendingDistance = 0;
-                _skipNextDeltaAfterArmed = true;
-                // Wait until three contacts are tracked before measuring movement.
+                // Settle only needed when the third contact just appeared (IsNew).
+                // If all three are already established, accumulate immediately (more responsive).
+                _awaitingEstablishedSettle = established < 3 || HasNew(deltas);
                 break;
 
             case DragState.Pending:
                 if (established < 3)
                 {
                     // Still acquiring the third finger — ignore settle noise.
-                    _skipNextDeltaAfterArmed = true;
+                    _awaitingEstablishedSettle = true;
                     break;
                 }
 
-                if (_skipNextDeltaAfterArmed)
+                if (_awaitingEstablishedSettle)
                 {
-                    // Drop one post-arm frame (contact ID rematch / coordinate settle).
-                    _skipNextDeltaAfterArmed = false;
+                    // Drop one post-establish frame (contact ID rematch / coordinate settle).
+                    _awaitingEstablishedSettle = false;
                     break;
                 }
 
@@ -140,7 +141,7 @@ public sealed class DragEngine
         _pendingAccumX = 0;
         _pendingAccumY = 0;
         _pendingDistance = 0;
-        _skipNextDeltaAfterArmed = false;
+        _awaitingEstablishedSettle = false;
         TransitionTo(DragState.End);
         TransitionTo(DragState.Idle);
     }
@@ -161,6 +162,15 @@ public sealed class DragEngine
             if (!d.IsNew) n++;
         }
         return n;
+    }
+
+    private static bool HasNew(IReadOnlyList<ContactDelta> deltas)
+    {
+        foreach (var d in deltas)
+        {
+            if (d.IsNew) return true;
+        }
+        return false;
     }
 
     private static (float avgDx, float avgDy, bool hasMove) AverageDelta(IReadOnlyList<ContactDelta> deltas)
