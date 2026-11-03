@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="SettingsWindowTitle" xml:space="preserve"><value>Win Precision Touchpad — 设置</value></data>
+  <data name="SettingsHeading" xml:space="preserve"><value>设置</value></data>
+  <data name="SettingsIntro" xml:space="preserve"><value>三指拖动会立即生效；按“保存”写入配置文件并设置开机自启。</value></data>
+  <data name="SectionDrag" xml:space="preserve"><value>拖动</value></data>
+  <data name="EnableThreeFingerDrag" xml:space="preserve"><value>启用三指拖动</value></data>
+  <data name="ToggleOn" xml:space="preserve"><value>开</value></data>
+  <data name="ToggleOff" xml:space="preserve"><value>关</value></data>
+  <data name="SystemGestureHint" xml:space="preserve"><value>请在 Windows“触控板”设置中将三指手势设为“无／Nothing”，否则系统手势会与本应用抢输入。</value></data>
+  <data name="Sensitivity" xml:space="preserve"><value>灵敏度</value></data>
+  <data name="SensitivityHint" xml:space="preserve"><value>HID 位移 × 此倍率（0.20–2.00）。默认 0.60；数值越大拖动越快，不跟随系统光标速度。</value></data>
+  <data name="StartDistance" xml:space="preserve"><value>开始距离阈值（HID）</value></data>
+  <data name="StartDistanceHint" xml:space="preserve"><value>Pending 状态下需移动这么多 HID 单位才会按下左键开始拖动。</value></data>
+  <data name="SectionStartup" xml:space="preserve"><value>启动</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>开机时自动启动（当前用户）</value></data>
+  <data name="SectionAbout" xml:space="preserve"><value>关于／路径</value></data>
+  <data name="PathHintFormat" xml:space="preserve"><value>配置文件：{0}
+可执行文件：{1}
+开机自启注册表：{2}\{3}</value></data>
+  <data name="Close" xml:space="preserve"><value>关闭</value></data>
+  <data name="Save" xml:space="preserve"><value>保存</value></data>
+  <data name="SavedStatusFormat" xml:space="preserve"><value>已保存（{0:HH:mm:ss}，Asia/Taipei）</value></data>
+  <data name="SaveFailedFormat" xml:space="preserve"><value>保存失败：{0}</value></data>
+  <data name="LogWindowTitle" xml:space="preserve"><value>Win Precision Touchpad — 日志</value></data>
+  <data name="TraySettings" xml:space="preserve"><value>设置…</value></data>
+  <data name="TrayOpenLogWindow" xml:space="preserve"><value>打开日志窗口</value></data>
+  <data name="TrayOpenLogFolder" xml:space="preserve"><value>打开日志文件夹</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>退出</value></data>
+  <data name="TrayToolTipFormat" xml:space="preserve"><value>Win Precision Touchpad (WinUI) [{0}]</value></data>
+  <data name="TrayOn" xml:space="preserve"><value>ON</value></data>
+  <data name="TrayOff" xml:space="preserve"><value>OFF</value></data>
+  <data name="CannotOpenLogFolderFormat" xml:space="preserve"><value>无法打开日志文件夹：{0}</value></data>
+  <data name="CannotSaveSettingsFormat" xml:space="preserve"><value>无法保存设置：{0}</value></data>
+</root>

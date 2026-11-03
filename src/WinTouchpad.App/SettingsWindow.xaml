@@ -1,0 +1,128 @@
+﻿<Window
+    x:Class="WinTouchpad.App.SettingsWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Win Precision Touchpad — Settings">
+    <Grid Background="{ThemeResource LayerFillColorDefaultBrush}">
+        <ScrollViewer Padding="28,24,28,24">
+            <StackPanel MaxWidth="560" Spacing="16">
+                <StackPanel Spacing="4">
+                    <TextBlock x:Name="HeadingText" FontSize="28" FontWeight="SemiBold" />
+                    <TextBlock
+                        x:Name="IntroText"
+                        Opacity="0.7"
+                        TextWrapping="Wrap" />
+                </StackPanel>
+
+                <!-- Card: drag -->
+                <Border
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                    <StackPanel Spacing="14">
+                        <TextBlock x:Name="SectionDragText" FontSize="16" FontWeight="SemiBold" />
+                        <ToggleSwitch
+                            x:Name="EnableDragToggle"
+                            OffContent="Off"
+                            OnContent="On" />
+                        <TextBlock
+                            x:Name="SystemGestureHintText"
+                            Opacity="0.65"
+                            TextWrapping="Wrap"
+                            FontSize="12" />
+
+                        <StackPanel Spacing="6">
+                            <Grid>
+                                <TextBlock x:Name="SensitivityLabel" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                <TextBlock
+                                    x:Name="SensitivityValueText"
+                                    HorizontalAlignment="Right"
+                                    FontWeight="SemiBold" />
+                            </Grid>
+                            <Slider
+                                x:Name="SensitivitySlider"
+                                Minimum="0.2"
+                                Maximum="2.0"
+                                StepFrequency="0.05"
+                                TickFrequency="0.2"
+                                SnapsTo="StepValues"
+                                TickPlacement="None" />
+                            <TextBlock
+                                x:Name="SensitivityHintText"
+                                Opacity="0.65"
+                                TextWrapping="Wrap"
+                                FontSize="12" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="StartDistanceLabel" FontWeight="SemiBold" />
+                            <NumberBox
+                                x:Name="StartDistanceBox"
+                                Minimum="0"
+                                Maximum="200"
+                                SmallChange="1"
+                                LargeChange="5"
+                                SpinButtonPlacementMode="Inline"
+                                ValidationMode="InvalidInputOverwritten" />
+                            <TextBlock
+                                x:Name="StartDistanceHintText"
+                                Opacity="0.65"
+                                TextWrapping="Wrap"
+                                FontSize="12" />
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Card: startup -->
+                <Border
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                    <StackPanel Spacing="10">
+                        <TextBlock x:Name="SectionStartupText" FontSize="16" FontWeight="SemiBold" />
+                        <ToggleSwitch
+                            x:Name="StartWithWindowsToggle"
+                            OffContent="Off"
+                            OnContent="On" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Card: about -->
+                <Border
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="20">
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Name="SectionAboutText" FontSize="16" FontWeight="SemiBold" />
+                        <TextBlock
+                            x:Name="PathHintText"
+                            Opacity="0.75"
+                            TextWrapping="Wrap"
+                            IsTextSelectionEnabled="True"
+                            FontSize="12" />
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <Button x:Name="CloseButton" MinWidth="96" />
+                    <Button
+                        x:Name="SaveButton"
+                        Style="{StaticResource AccentButtonStyle}"
+                        MinWidth="96" />
+                </StackPanel>
+
+                <TextBlock
+                    x:Name="StatusText"
+                    Opacity="0.7"
+                    TextWrapping="Wrap"
+                    FontSize="12" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

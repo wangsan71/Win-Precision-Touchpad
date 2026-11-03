@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <RootNamespace>WinTouchpad.Tray</RootNamespace>
+    <AssemblyName>WinTouchpad.Tray</AssemblyName>
+    <Description>M3 tray host: three-finger drag, settings UI, autostart</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WinTouchpad.Core\WinTouchpad.Core.csproj" />
+  </ItemGroup>
+</Project>

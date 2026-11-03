@@ -1,0 +1,6 @@
+﻿<Project>
+  <PropertyGroup>
+    <!-- Universal Build Tools AppxPackage tasks (WinUI / Windows App SDK unpackaged builds) -->
+    <AppxMSBuildToolsPath Condition="Exists('C:\BuildTools\MSBuild\Microsoft\VisualStudio\v17.0\AppxPackage\')">C:\BuildTools\MSBuild\Microsoft\VisualStudio\v17.0\AppxPackage\</AppxMSBuildToolsPath>
+  </PropertyGroup>
+</Project>

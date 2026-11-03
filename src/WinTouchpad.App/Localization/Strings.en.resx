@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="SettingsWindowTitle" xml:space="preserve"><value>Win Precision Touchpad — Settings</value></data>
+  <data name="SettingsHeading" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsIntro" xml:space="preserve"><value>Three-finger drag applies instantly. Tap Save to write the config file and startup setting.</value></data>
+  <data name="SectionDrag" xml:space="preserve"><value>Dragging</value></data>
+  <data name="EnableThreeFingerDrag" xml:space="preserve"><value>Enable three-finger drag</value></data>
+  <data name="ToggleOn" xml:space="preserve"><value>On</value></data>
+  <data name="ToggleOff" xml:space="preserve"><value>Off</value></data>
+  <data name="SystemGestureHint" xml:space="preserve"><value>In Windows Touchpad settings, set three-finger gestures to Nothing; otherwise Windows may steal the gesture from this app.</value></data>
+  <data name="Sensitivity" xml:space="preserve"><value>Sensitivity</value></data>
+  <data name="SensitivityHint" xml:space="preserve"><value>HID delta × this multiplier (0.20–2.00). Default 0.60; higher is faster. Independent of system cursor speed.</value></data>
+  <data name="StartDistance" xml:space="preserve"><value>Start-distance threshold (HID)</value></data>
+  <data name="StartDistanceHint" xml:space="preserve"><value>While Pending, move this many HID units before the left button is pressed to start dragging.</value></data>
+  <data name="SectionStartup" xml:space="preserve"><value>Startup</value></data>
+  <data name="StartWithWindows" xml:space="preserve"><value>Start with Windows (current user)</value></data>
+  <data name="SectionAbout" xml:space="preserve"><value>About / paths</value></data>
+  <data name="PathHintFormat" xml:space="preserve"><value>Settings file: {0}
+Executable: {1}
+Autostart registry: {2}\{3}</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="SavedStatusFormat" xml:space="preserve"><value>Saved ({0:HH:mm:ss}, Asia/Taipei)</value></data>
+  <data name="SaveFailedFormat" xml:space="preserve"><value>Save failed: {0}</value></data>
+  <data name="LogWindowTitle" xml:space="preserve"><value>Win Precision Touchpad — Log</value></data>
+  <data name="TraySettings" xml:space="preserve"><value>Settings…</value></data>
+  <data name="TrayOpenLogWindow" xml:space="preserve"><value>Open log window</value></data>
+  <data name="TrayOpenLogFolder" xml:space="preserve"><value>Open log folder</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Exit</value></data>
+  <data name="TrayToolTipFormat" xml:space="preserve"><value>Win Precision Touchpad (WinUI) [{0}]</value></data>
+  <data name="TrayOn" xml:space="preserve"><value>ON</value></data>
+  <data name="TrayOff" xml:space="preserve"><value>OFF</value></data>
+  <data name="CannotOpenLogFolderFormat" xml:space="preserve"><value>Could not open log folder: {0}</value></data>
+  <data name="CannotSaveSettingsFormat" xml:space="preserve"><value>Could not save settings: {0}</value></data>
+</root>

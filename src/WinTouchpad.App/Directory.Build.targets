@@ -1,0 +1,55 @@
+﻿<Project>
+  <!--
+    Unpackaged WinUI 3 without VS AppxPackage MSBuild tasks.
+    Directory.Build.targets imports last, so these Target redefs win over WindowsAppSDK.
+  -->
+
+  <PropertyGroup>
+    <AppxGeneratePriEnabled>false</AppxGeneratePriEnabled>
+    <AppxGeneratePrisForPortableLibrariesEnabled>false</AppxGeneratePrisForPortableLibrariesEnabled>
+    <EnableMsixTooling>false</EnableMsixTooling>
+    <GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
+    <AppxPackage>false</AppxPackage>
+    <IncludeLayoutFilesInPackage>false</IncludeLayoutFilesInPackage>
+  </PropertyGroup>
+
+  <!-- Skip SDK tool path probes that call GetSdkFileFullPath from AppxPackage.dll -->
+  <Target Name="_GetSdkToolsPathsFromSdk" />
+  <Target Name="_GetSdkToolPaths" />
+  <Target Name="_ValidateConfiguration" />
+  <Target Name="_GetDefaultResourceLanguage">
+    <PropertyGroup>
+      <DefaultResourceLanguage Condition="'$(DefaultResourceLanguage)' == ''">en-US</DefaultResourceLanguage>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GeneratePrisForPortableLibraries" />
+  <Target Name="_GenerateProjectPriFile" Condition="'$(AppxGeneratePriEnabled)' == 'true'" />
+  <Target Name="AddPriPayloadFilesToCopyToOutputDirectoryItems" />
+
+  <Target Name="CopyLocalFilesOutputGroup" Returns="@(CopyLocalFilesOutputGroupOutput)">
+    <ItemGroup>
+      <CopyLocalFilesOutputGroupOutput Include="@(ReferenceCopyLocalPaths)"
+                                       Condition="'%(ReferenceCopyLocalPaths.Extension)' != '.xml'">
+        <TargetPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</TargetPath>
+      </CopyLocalFilesOutputGroupOutput>
+    </ItemGroup>
+  </Target>
+
+  <!-- Pass-through packaging outputs without ExpandPayloadDirectories -->
+  <Target Name="GetMrtPackagingOutputs" Returns="@(PackagingOutputs)">
+    <ItemGroup>
+      <PackagingOutputs Include="$(TargetPath)" Condition="Exists('$(TargetPath)')">
+        <TargetPath>$(TargetFileName)</TargetPath>
+        <OutputGroup>BuiltProjectOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </PackagingOutputs>
+      <PackagingOutputs Include="@(ReferenceCopyLocalPaths)"
+                        Condition="'%(ReferenceCopyLocalPaths.Extension)' != '.xml'">
+        <TargetPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</TargetPath>
+        <OutputGroup>CopyLocalFilesOutputGroup</OutputGroup>
+        <ProjectName>$(ProjectName)</ProjectName>
+      </PackagingOutputs>
+    </ItemGroup>
+  </Target>
+</Project>

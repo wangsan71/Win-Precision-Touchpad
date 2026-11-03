@@ -1,0 +1,44 @@
+﻿## Build
+**/bin/
+**/obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+*.DotSettings.user
+
+## Publish / packages
+artifacts/
+dist/
+publish/
+*.nupkg
+*.snupkg
+
+## Logs / local
+_ref/
+*.log
+*.tmp
+*.temp
+
+## Secrets / local machine
+*.pfx
+*.p12
+*.key
+*.pem
+secrets.json
+**/appsettings.*.local.json
+.env
+.env.*
+
+## User settings (runtime lives under LocalAppData — never commit copies)
+**/WinPrecisionTouchpad/
+settings.local.json
+
+## OS / IDE
+Thumbs.db
+Desktop.ini
+.DS_Store
+.idea/
+*.swp
+*~
