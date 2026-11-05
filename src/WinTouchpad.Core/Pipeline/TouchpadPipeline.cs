@@ -47,11 +47,11 @@ public sealed class TouchpadPipeline
         {
             if (route == FingerRoute.FourFingerReserved)
             {
-                _logger.Info($"route=FourFingerReserved (v1 ignore) contacts={frame.FingerCount} [{FormatContacts(frame.Contacts)}]");
+                SafeInfo($"route=FourFingerReserved (v1 ignore) contacts={frame.FingerCount} [{FormatContacts(frame.Contacts)}]");
             }
             else if (route is FingerRoute.None or FingerRoute.IgnoredLowCount or FingerRoute.IgnoredHighCount)
             {
-                _logger.Info($"route={route} contacts={frame.FingerCount}");
+                SafeInfo($"route={route} contacts={frame.FingerCount}");
             }
 
             _lastLoggedFingerCount = frame.FingerCount;
@@ -66,7 +66,7 @@ public sealed class TouchpadPipeline
                 _lastVerboseLogUtc = now;
                 _lastLoggedFingerCount = frame.FingerCount;
                 var deltaText = string.Join(" ", deltas.Select(d => d.ToString()));
-                _logger.Info($"contacts={frame.FingerCount} reported={frame.ReportedContactCount} {FormatContacts(frame.Contacts)} | {deltaText}");
+                SafeInfo($"contacts={frame.FingerCount} reported={frame.ReportedContactCount} {FormatContacts(frame.Contacts)} | {deltaText}");
             }
         }
 
@@ -77,8 +77,14 @@ public sealed class TouchpadPipeline
         }
         catch (Exception ex)
         {
-            _logger.Error("DragEngine.Process failed", ex);
-            _drag.Reset();
+            try
+            {
+                _drag.Reset();
+            }
+            finally
+            {
+                SafeError("DragEngine.Process failed", ex);
+            }
         }
 
         if (frame.FingerCount == 0)
@@ -98,7 +104,7 @@ public sealed class TouchpadPipeline
         _drag.Options.StartDistanceThreshold = settings.StartDistanceThreshold;
         if (!settings.DragEnabled)
             _drag.Reset();
-        _logger.Info($"settings applied: enabled={settings.DragEnabled} sensitivity={settings.Sensitivity:0.##} startDistance={settings.StartDistanceThreshold:0.##}");
+        SafeInfo($"settings applied: enabled={settings.DragEnabled} sensitivity={settings.Sensitivity:0.##} startDistance={settings.StartDistanceThreshold:0.##}");
     }
 
     public void SetDragEnabled(bool enabled)
@@ -106,16 +112,25 @@ public sealed class TouchpadPipeline
         _drag.Options.Enabled = enabled;
         if (!enabled)
             _drag.Reset();
-        _logger.Info($"drag.enabled={enabled}");
+        SafeInfo($"drag.enabled={enabled}");
     }
 
     private void OnDragStateChanged(DragState previous, DragState next)
     {
-        _logger.Info($"drag.state {previous} → {next}");
-        if (next == DragState.Dragging)
-            DragProcessBoost.SetDragging(true);
-        else if (next is DragState.Idle or DragState.End)
-            DragProcessBoost.SetDragging(false);
+        SafeInfo($"drag.state {previous} → {next}");
+        DragProcessBoost.SetDragging(next == DragState.Dragging);
+    }
+
+    private void SafeInfo(string message)
+    {
+        try { _logger.Info(message); }
+        catch { /* Logging must not interrupt input processing. */ }
+    }
+
+    private void SafeError(string message, Exception exception)
+    {
+        try { _logger.Error(message, exception); }
+        catch { /* Logging must not interrupt recovery. */ }
     }
 
     private static string FormatContacts(IReadOnlyList<TouchpadContact> contacts) =>

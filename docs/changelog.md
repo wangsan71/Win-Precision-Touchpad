@@ -1,4 +1,15 @@
-﻿# Changelog
+# Changelog
+
+## v0.1.4 — 穩定性與潛在問題修正（2026-11-05，Asia/Taipei）
+
+- 托盤啟動：隱藏生命週期視窗改為建立後直接 Hide，避免短暫閃現空視窗
+- 拖曳引擎：新增 ReleasePending；左鍵釋放失敗時保留責任並於 Reset 重試；狀態觀察者例外不中斷恢復
+- 輸入管線：記錄失敗不干擾處理；DragEngine.Process 例外時先 Reset 再記錄
+- Raw Input：RID_DEVICE_INFO 改為正確 union 配置，避免裝置資訊解析錯誤
+- 設定：Sensitivity／StartDistanceThreshold 對非有限值防護；儲存改為帶備份的原子寫入
+- 安裝／發佈腳本：版本參數化、輸出路徑限制於 artifacts\publish、拒絕經符號連結發佈；移除危險的卸載整目錄刪除
+- 單元測試補強（ReleasePending、設定備份、原生結構配置等）
+- Release：`WinTouchpad-Setup-v0.1.4.exe` + `WinTouchpad-win-x64-v0.1.4.zip`
 
 ## v0.1.3 — 安裝精靈視窗拖曳修正（2026-11-03，Asia/Taipei）
 

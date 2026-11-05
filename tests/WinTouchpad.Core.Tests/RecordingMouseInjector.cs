@@ -9,6 +9,7 @@ internal sealed class RecordingMouseInjector : IMouseInjector
     public float TotalDy { get; private set; }
     public int LeftDownCount { get; private set; }
     public int LeftUpCount { get; private set; }
+    public int LeftUpFailuresRemaining { get; set; }
 
     public void LeftDown()
     {
@@ -19,6 +20,11 @@ internal sealed class RecordingMouseInjector : IMouseInjector
     public void LeftUp()
     {
         LeftUpCount++;
+        if (LeftUpFailuresRemaining > 0)
+        {
+            LeftUpFailuresRemaining--;
+            throw new InvalidOperationException("Simulated LeftUp failure.");
+        }
         Actions.Add("Up");
     }
 

@@ -57,6 +57,29 @@ public class SettingsStoreTests
     }
 
     [Fact]
+    public void Save_CreatesBackupOfPreviousSettings()
+    {
+        var dir = CreateTempDir();
+        try
+        {
+            var store = new SettingsStore(dir);
+            store.Save(new AppSettings { Sensitivity = 0.4f, DragEnabled = false });
+            store.Save(new AppSettings { Sensitivity = 1.4f, DragEnabled = true });
+
+            var backupJson = File.ReadAllText(store.FilePath + ".bak");
+            var backup = System.Text.Json.JsonSerializer.Deserialize<AppSettings>(backupJson);
+            Assert.NotNull(backup);
+            Assert.Equal(0.4f, backup.Sensitivity, 3);
+            Assert.False(backup.DragEnabled);
+            Assert.Empty(Directory.GetFiles(dir, "*.tmp"));
+        }
+        finally
+        {
+            TryDelete(dir);
+        }
+    }
+
+    [Fact]
     public void Clamp_LimitsSensitivityAndThreshold()
     {
         var s = new AppSettings { Sensitivity = 9f, StartDistanceThreshold = -5f };
@@ -69,6 +92,12 @@ public class SettingsStoreTests
         s.Clamp();
         Assert.Equal(0.2f, s.Sensitivity, 3);
         Assert.Equal(200f, s.StartDistanceThreshold, 3);
+
+        s.Sensitivity = float.NaN;
+        s.StartDistanceThreshold = float.PositiveInfinity;
+        s.Clamp();
+        Assert.Equal(0.6f, s.Sensitivity, 3);
+        Assert.Equal(12f, s.StartDistanceThreshold, 3);
     }
 
     [Fact]

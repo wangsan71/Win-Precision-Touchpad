@@ -36,8 +36,10 @@ public sealed class AppSettings
     /// <summary>Clamp numeric fields to safe ranges after load or UI edit.</summary>
     public void Clamp()
     {
+        if (!float.IsFinite(Sensitivity)) Sensitivity = 0.6f;
         if (Sensitivity < 0.2f) Sensitivity = 0.2f;
         if (Sensitivity > 2.0f) Sensitivity = 2.0f;
+        if (!float.IsFinite(StartDistanceThreshold)) StartDistanceThreshold = 12f;
         if (StartDistanceThreshold < 0f) StartDistanceThreshold = 0f;
         if (StartDistanceThreshold > 200f) StartDistanceThreshold = 200f;
     }

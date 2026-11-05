@@ -16,6 +16,7 @@ public sealed class DragEngine
     private float _pendingAccumY;
     private float _pendingDistance;
     private bool _awaitingEstablishedSettle;
+    private bool _leftButtonOutstanding;
 
     public DragEngine(IMouseInjector mouse, DragEngineOptions? options = null)
     {
@@ -35,17 +36,20 @@ public sealed class DragEngine
     /// </summary>
     public void Process(bool isThreeFinger, IReadOnlyList<ContactDelta> deltas)
     {
+        if (State == DragState.ReleasePending)
+            return;
+
         if (!_options.Enabled)
         {
             if (State is DragState.Pending or DragState.Dragging)
-                EndGesture(releaseButton: State == DragState.Dragging);
+                EndGesture();
             return;
         }
 
         if (!isThreeFinger)
         {
             if (State is DragState.Pending or DragState.Dragging)
-                EndGesture(releaseButton: State == DragState.Dragging);
+                EndGesture();
             return;
         }
 
@@ -103,8 +107,8 @@ public sealed class DragEngine
     /// <summary>Force end (e.g. app exit). Safe if already Idle.</summary>
     public void Reset()
     {
-        if (State is DragState.Pending or DragState.Dragging)
-            EndGesture(releaseButton: State == DragState.Dragging);
+        if (_leftButtonOutstanding || State is DragState.Pending or DragState.Dragging or DragState.ReleasePending)
+            EndGesture();
         else if (State != DragState.Idle)
             TransitionTo(DragState.Idle);
     }
@@ -119,6 +123,7 @@ public sealed class DragEngine
     private void BeginDrag()
     {
         _mouse.LeftDown();
+        _leftButtonOutstanding = true;
         TransitionTo(DragState.Dragging);
         // Flush pending movement so the cursor catches up after the threshold.
         var sx = _pendingAccumX * _options.Sensitivity;
@@ -130,20 +135,34 @@ public sealed class DragEngine
             _mouse.MoveRelative(sx, sy);
     }
 
-    private void EndGesture(bool releaseButton)
+    private void EndGesture()
     {
-        if (releaseButton)
+        if (_leftButtonOutstanding)
         {
-            try { _mouse.LeftUp(); }
-            catch { /* best-effort release */ }
+            try
+            {
+                _mouse.LeftUp();
+                _leftButtonOutstanding = false;
+            }
+            catch
+            {
+                ClearPendingMovement();
+                TransitionTo(DragState.ReleasePending);
+                return;
+            }
         }
 
+        ClearPendingMovement();
+        TransitionTo(DragState.End);
+        TransitionTo(DragState.Idle);
+    }
+
+    private void ClearPendingMovement()
+    {
         _pendingAccumX = 0;
         _pendingAccumY = 0;
         _pendingDistance = 0;
         _awaitingEstablishedSettle = false;
-        TransitionTo(DragState.End);
-        TransitionTo(DragState.Idle);
     }
 
     private void TransitionTo(DragState next)
@@ -151,7 +170,14 @@ public sealed class DragEngine
         if (State == next) return;
         var prev = State;
         State = next;
-        StateChanged?.Invoke(prev, next);
+        try
+        {
+            StateChanged?.Invoke(prev, next);
+        }
+        catch
+        {
+            // State observers are diagnostic only and must not interrupt input recovery.
+        }
     }
 
     private static int CountEstablished(IReadOnlyList<ContactDelta> deltas)

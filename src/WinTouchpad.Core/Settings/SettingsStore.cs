@@ -74,10 +74,40 @@ public sealed class SettingsStore
 
         Directory.CreateDirectory(_directory);
         var json = JsonSerializer.Serialize(settings, JsonOptions);
-        var temp = _filePath + ".tmp";
-        File.WriteAllText(temp, json, Encoding.UTF8);
-        File.Copy(temp, _filePath, overwrite: true);
-        File.Delete(temp);
+        var token = Guid.NewGuid().ToString("N");
+        var temp = _filePath + "." + token + ".tmp";
+        var backupTemp = _filePath + "." + token + ".bak.tmp";
+        var backup = _filePath + ".bak";
+
+        try
+        {
+            File.WriteAllText(temp, json, Encoding.UTF8);
+            if (File.Exists(_filePath))
+            {
+                File.Copy(_filePath, backupTemp, overwrite: false);
+                File.Move(backupTemp, backup, overwrite: true);
+            }
+
+            File.Move(temp, _filePath, overwrite: true);
+        }
+        finally
+        {
+            TryDeleteFile(temp);
+            TryDeleteFile(backupTemp);
+        }
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
+            // Best-effort cleanup; never replace the original save error.
+        }
     }
 
     /// <summary>

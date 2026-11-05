@@ -7,5 +7,7 @@ public enum DragState
     Pending = 1,
     Dragging = 2,
     /// <summary>Transient end-of-gesture marker reported on StateChanged before returning to Idle.</summary>
-    End = 3
+    End = 3,
+    /// <summary>The injected left button is still down because release has not succeeded.</summary>
+    ReleasePending = 4
 }

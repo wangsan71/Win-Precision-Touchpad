@@ -4,12 +4,16 @@
 
 #define MyAppName "Win Precision Touchpad"
 #define MyAppNameShort "WinTouchpad"
-#define MyAppVersion "0.1.3"
+#ifndef MyAppVersion
+#define MyAppVersion "0.1.4"
+#endif
 #define MyAppPublisher "wangsan71"
 #define MyAppURL "https://github.com/wangsan71/Win-Precision-Touchpad"
 #define MyAppExeName "WinTouchpad.App.exe"
 #define MyAppRegValue "WinPrecisionTouchpad"
+#ifndef PublishDir
 #define PublishDir "..\artifacts\publish\win-x64"
+#endif
 
 [Setup]
 AppId={{A7C3E9F1-4B2D-4E8A-9C1F-6D5B8A0E2F33}
@@ -67,9 +71,6 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: 
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent; Tasks: launch
-
-[UninstallDelete]
-Type: filesandordirs; Name: "{app}"
 
 [Code]
 const

@@ -129,6 +129,44 @@ public class DragEngineTests
     }
 
     [Fact]
+    public void FailedLeftUp_RetainsReleaseResponsibility_AndResetRetries()
+    {
+        var mouse = new RecordingMouseInjector { LeftUpFailuresRemaining = 1 };
+        var engine = new DragEngine(mouse, new DragEngineOptions { StartDistanceThreshold = 1f });
+
+        ArmPending(engine);
+        engine.Process(true, ThreeMove(2, 0));
+        Assert.Equal(DragState.Dragging, engine.State);
+        Assert.Equal(1, mouse.LeftDownCount);
+
+        engine.Process(false, Array.Empty<ContactDelta>());
+        Assert.Equal(DragState.ReleasePending, engine.State);
+        Assert.Equal(1, mouse.LeftUpCount);
+        Assert.DoesNotContain("Up", mouse.Actions);
+
+        engine.Reset();
+        Assert.Equal(DragState.Idle, engine.State);
+        Assert.Equal(2, mouse.LeftUpCount);
+        Assert.Equal("Up", mouse.Actions[^1]);
+    }
+
+    [Fact]
+    public void StateObserverFailure_DoesNotInterruptDragRecovery()
+    {
+        var mouse = new RecordingMouseInjector();
+        var engine = new DragEngine(mouse, new DragEngineOptions { StartDistanceThreshold = 1f });
+        engine.StateChanged += (_, _) => throw new InvalidOperationException("Simulated observer failure.");
+
+        ArmPending(engine);
+        engine.Process(true, ThreeMove(2, 0));
+        Assert.Equal(DragState.Dragging, engine.State);
+        engine.Reset();
+
+        Assert.Equal(DragState.Idle, engine.State);
+        Assert.Equal(1, mouse.LeftUpCount);
+    }
+
+    [Fact]
     public void FourFingerRoute_EndsActiveDrag()
     {
         var mouse = new RecordingMouseInjector();

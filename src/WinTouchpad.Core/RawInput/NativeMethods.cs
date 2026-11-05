@@ -125,7 +125,35 @@ internal static class NativeMethods
     {
         public uint cbSize;
         public uint dwType;
-        public RID_DEVICE_INFO_HID hid;
+        public RID_DEVICE_INFO_UNION data;
+    }
+
+    [StructLayout(LayoutKind.Explicit, Size = 24)]
+    public struct RID_DEVICE_INFO_UNION
+    {
+        [FieldOffset(0)] public RID_DEVICE_INFO_MOUSE mouse;
+        [FieldOffset(0)] public RID_DEVICE_INFO_KEYBOARD keyboard;
+        [FieldOffset(0)] public RID_DEVICE_INFO_HID hid;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RID_DEVICE_INFO_MOUSE
+    {
+        public uint dwId;
+        public uint dwNumberOfButtons;
+        public uint dwSampleRate;
+        [MarshalAs(UnmanagedType.Bool)] public bool fHasHorizontalWheel;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RID_DEVICE_INFO_KEYBOARD
+    {
+        public uint dwType;
+        public uint dwSubType;
+        public uint dwKeyboardMode;
+        public uint dwNumberOfFunctionKeys;
+        public uint dwNumberOfIndicators;
+        public uint dwNumberOfKeysTotal;
     }
 
     [StructLayout(LayoutKind.Sequential)]

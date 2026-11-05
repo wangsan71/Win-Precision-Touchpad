@@ -53,8 +53,8 @@ public static class TouchpadRawInput
             if (NativeMethods.GetRawInputDeviceInfo(device.hDevice, NativeMethods.RIDI_DEVICEINFO, ref info, ref infoSize) == unchecked((uint)-1))
                 continue;
 
-            if (info.hid.usUsagePage == NativeMethods.HidUsagePageDigitizer &&
-                info.hid.usUsage == NativeMethods.HidUsageTouchpad)
+            if (info.data.hid.usUsagePage == NativeMethods.HidUsagePageDigitizer &&
+                info.data.hid.usUsage == NativeMethods.HidUsageTouchpad)
             {
                 return true;
             }

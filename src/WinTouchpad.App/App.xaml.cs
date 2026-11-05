@@ -34,23 +34,21 @@ public partial class App : Application
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        // Keep a hidden lifetime window so the WinUI dispatcher stays alive with tray-only UX.
+        // Retain a XAML window and its dispatcher for the tray application's lifetime.
+        // Window construction creates the native host; Activate() would display its
+        // empty, dark content. Never show it just to hide it later: tray startup can
+        // block or fail before a queued Hide() gets a chance to run.
         _lifetimeWindow = new MainWindow();
         _lifetimeWindow.AppWindow.IsShownInSwitchers = false;
-        _lifetimeWindow.Activate();
-
-        _tray = new TrayController(_lifetimeWindow.DispatcherQueue);
-        _tray.Start();
-
-        // Hide after tray is up — immediate Hide can race with notify-icon window setup.
-        _lifetimeWindow.DispatcherQueue.TryEnqueue(
-            Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
-            () => _lifetimeWindow?.AppWindow.Hide());
+        _lifetimeWindow.AppWindow.Hide();
 
         _lifetimeWindow.Closed += (_, _) =>
         {
             _tray?.Dispose();
             _tray = null;
         };
+
+        _tray = new TrayController(_lifetimeWindow.DispatcherQueue);
+        _tray.Start();
     }
 }
